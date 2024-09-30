@@ -9,7 +9,7 @@
     document.body.appendChild(chatbotContainer);
 
     const iframe = document.createElement("iframe");
-    iframe.src = `http://localhost:3000/chatbot/${chatbotId}`;
+    iframe.src = `https://jeemagent.vercel.app/chatbot/${chatbotId}`;
     iframe.style.border = "none";
     iframe.style.width = "400px";
     iframe.style.height = "500px";
