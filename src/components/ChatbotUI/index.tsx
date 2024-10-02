@@ -3,7 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  Alert,
+} from "@mui/material";
 
 interface Message {
   text: string;
@@ -15,12 +22,21 @@ interface ChatbotUIProps {
 }
 
 const theme = createTheme({
-  // Your theme options here
+  palette: {
+    mode: "light",
+    primary: {
+      main: "#1976d2",
+    },
+    secondary: {
+      main: "#dc004e",
+    },
+  },
 });
 
 const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMessages([
@@ -36,16 +52,27 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
       const userMessage = { text: input, sender: "user" as const };
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
+      setError(null);
 
-      const response = await fetch(`/api/chat?chatbotId=${chatbotId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      });
-      const data = await response.json();
+      try {
+        const response = await fetch(`/api/chat?chatbotId=${chatbotId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input }),
+        });
+        const data = await response.json();
 
-      const botMessage = { text: data.reply, sender: "bot" as const };
-      setMessages((prev) => [...prev, botMessage]);
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        const botMessage = { text: data.reply, sender: "bot" as const };
+        setMessages((prev) => [...prev, botMessage]);
+      } catch (error) {
+        setError(
+          error.message || "An error occurred while processing your request"
+        );
+      }
     }
   };
 
@@ -65,6 +92,11 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
         <Typography variant="h6" gutterBottom>
           Chat with Bot {chatbotId}
         </Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <Box sx={{ flexGrow: 1, overflowY: "auto", mb: 2 }}>
           {messages.map((message, index) => (
             <Box
@@ -83,6 +115,10 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
                     message.sender === "user"
                       ? "primary.light"
                       : "secondary.light",
+                  color:
+                    message.sender === "user"
+                      ? "primary.contrastText"
+                      : "secondary.contrastText",
                   maxWidth: "80%",
                 }}
               >
@@ -99,6 +135,7 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type your message..."
           />
           <Button variant="contained" onClick={handleSend} sx={{ ml: 1 }}>
             Send
