@@ -12,7 +12,7 @@
     iframe.src = `https://jeemagent.vercel.app/chatbot/${chatbotId}`;
     iframe.style.border = "none";
     iframe.style.width = "400px";
-    iframe.style.height = "500px";
+    iframe.style.height = "auto";
     iframe.style.borderRadius = "10px";
     iframe.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
     chatbotContainer.appendChild(iframe);
