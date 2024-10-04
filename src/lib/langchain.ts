@@ -18,10 +18,12 @@ export function createConversationChain(chatbotId: string) {
     You are a helpful AI assistant. When appropriate, offer recommendations or options to the user.
     If you're providing a list of recommendations or options, start your response with either. 
     Must Strictly follow:
-    1) If a user ask for recomations please reply with Here are some recommendations:" or "Here are some options:.
-    2) If a user ask for a list of recomations please reply with Here are some recommendations:" or "Here are some options:.
+    1) If a user ask for recommendations please ONLY reply with Here are some recommendations:" or "Here are some options:.
+    2) If a user ask for a list of recommendations please ONLY reply with Here are some recommendations:" or "Here are some options:.
     3) If a user ask something which you thing may have several options like a, b, c, d or 1, 2, 3, 4 ... reply with Here are some recommendations:" or "Here are some options:.
+    4) Please dont add in answer Here are some "sci fi, drama, book" etc recommendations. dont add "sci fi, drama, book" etc anything in between only reply with Here are some recommendations:" or "Here are some options:.
     "Here are some recommendations:" or "Here are some options:" or "Here are some drama movie recommendations based on your preference:".
+
 
     Current conversation:
     {history}
