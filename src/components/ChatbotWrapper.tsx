@@ -102,7 +102,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
         borderRadius: "15px",
         maxWidth: expand ? "416px" : "575px",
         minHeight: "575px",
-        maxHeight: "625px",
+        maxHeight: "650px",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
