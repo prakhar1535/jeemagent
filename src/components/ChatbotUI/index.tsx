@@ -1,16 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Paper,
-  Alert,
-} from "@mui/material";
+import { Box, Typography, Paper, Alert } from "@mui/material";
+import Input from "../ui/Input";
 
 interface Message {
   text: string;
@@ -19,6 +14,7 @@ interface Message {
 
 interface ChatbotUIProps {
   chatbotId: string;
+  initialMessage?: string;
 }
 
 const theme = createTheme({
@@ -33,23 +29,14 @@ const theme = createTheme({
   },
 });
 
-const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
+const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId, initialMessage }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMessages([
-      {
-        text: `Hello! I'm chatbot ${chatbotId}. How can I help you?`,
-        sender: "bot",
-      },
-    ]);
-  }, [chatbotId]);
-
-  const handleSend = async () => {
-    if (input.trim()) {
-      const userMessage = { text: input, sender: "user" as const };
+  const handleSend = async (message: string = input) => {
+    if (message.trim()) {
+      const userMessage = { text: message, sender: "user" as const };
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
       setError(null);
@@ -58,7 +45,7 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
         const response = await fetch(`/api/chat?chatbotId=${chatbotId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: input }),
+          body: JSON.stringify({ message: message }),
         });
         const data = await response.json();
 
@@ -70,12 +57,20 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
         setMessages((prev) => [...prev, botMessage]);
       } catch (error) {
         setError(
+          // @ts-ignore
           error.message || "An error occurred while processing your request"
         );
       }
     }
   };
 
+  useEffect(() => {
+    setMessages([{ text: `Hello there how can I help you ?`, sender: "bot" }]);
+    if (initialMessage) {
+      handleSend(initialMessage);
+    }
+    // @ts-ignore
+  }, [chatbotId, initialMessage]);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -84,7 +79,7 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
         sx={{
           p: 2,
           maxWidth: 400,
-          maxHeight: 500,
+          height: "100%",
           display: "flex",
           flexDirection: "column",
         }}
@@ -128,18 +123,11 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId }) => {
           ))}
         </Box>
         <Box sx={{ display: "flex" }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            size="small"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Type your message..."
+          <Input
+            setInput={setInput}
+            input={input}
+            handleSend={() => handleSend()}
           />
-          <Button variant="contained" onClick={handleSend} sx={{ ml: 1 }}>
-            Send
-          </Button>
         </Box>
       </Paper>
     </ThemeProvider>
