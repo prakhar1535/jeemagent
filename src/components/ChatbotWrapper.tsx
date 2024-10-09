@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 import React, { useState, useEffect } from "react";
-import { Box, Paper, Typography, Skeleton } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Skeleton,
+  LinearProgress,
+} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatHome from "../components/ui/ChatHome";
 import TopBar from "./ui/TopBar";
@@ -28,7 +34,7 @@ interface Recommendation {
 const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [showChatUI, setShowChatUI] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
-  const [expand, setExpand] = useState(false);
+  const [expand, setExpand] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -74,7 +80,10 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
       }
     }
   };
-
+  const handleInfoCardClick = (message: string) => {
+    setShowChatUI(true);
+    handleSend(message);
+  };
   useEffect(() => {
     setMessages([{ text: `Hello there how can I help you ?`, sender: "bot" }]);
     if (initialMessage) {
@@ -94,172 +103,234 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
+  const resetChat = () => {
+    setMessages([{ text: `Hello there how can I help you ?`, sender: "bot" }]);
+    setShowChatUI(false);
+    setInitialMessage("");
+    setInput("");
+    setError(null);
+  };
 
   return (
     <Box
       sx={{
         position: "fixed",
         bottom: "20px",
-        right: "20px",
+        right: { md: "20px", xs: "0px" },
         display: "flex",
+        width: "100%",
         flexDirection: "column",
         alignItems: "flex-end",
       }}
     >
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              borderRadius: "15px",
-              width: expand ? "416px" : "575px",
-              height: "600px",
-              maxHeight: "650px",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-              marginBottom: "10px",
+          <Box
+            sx={{
+              width: expand
+                ? { md: "22%", xs: "100%" }
+                : { md: "575px", xs: "100%" },
             }}
           >
             <motion.div
-              initial={false}
-              animate={{
-                background: !showChatUI
-                  ? "linear-gradient(to bottom, #343A40, #808080, #F7F7F7)"
-                  : "white",
-              }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
               style={{
-                height: "100%",
+                borderRadius: "15px",
+                height: expand ? "637px" : "637px",
+                maxHeight: "650px",
                 display: "flex",
                 flexDirection: "column",
+                overflow: "hidden",
+                marginBottom: "10px",
               }}
             >
-              <TopBar
-                expand={expand}
-                setExpand={() => setExpand(!expand)}
-                backgroundColor={showChatUI ? "#343A40" : "unset"}
-              />
-              <AnimatePresence mode="wait">
-                {!showChatUI ? (
-                  <motion.div
-                    key="chatHome"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ChatHome expand={expand} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="chatUI"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ flexGrow: 1, overflowY: "auto", padding: "12px" }}
-                  >
-                    <AnimatePresence>
-                      {messages.map((message, index) => (
+              <motion.div
+                initial={false}
+                animate={{
+                  background: !showChatUI
+                    ? "linear-gradient(to bottom, #343A40, #808080, #F7F7F7)"
+                    : "transparent",
+                }}
+                transition={{ duration: 0.5 }}
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <TopBar
+                  expand={expand}
+                  setExpand={() => setExpand(!expand)}
+                  backgroundColor={showChatUI ? "#343A40" : "unset"}
+                  onReset={resetChat}
+                />
+                <AnimatePresence mode="wait">
+                  {!showChatUI ? (
+                    <motion.div
+                      key="chatHome"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ChatHome
+                        expand={expand}
+                        marginTop={expand ? "144px" : "192px"}
+                        onInfoCardClick={handleInfoCardClick}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="chatUI"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      style={{
+                        flexGrow: 1,
+                        overflowY: "auto",
+                        padding: "12px",
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <AnimatePresence>
+                        {messages.map((message, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent:
+                                  message.sender === "user"
+                                    ? "flex-end"
+                                    : "flex-start",
+                                mb: 1,
+                              }}
+                            >
+                              <Paper
+                                sx={{
+                                  p: 1,
+                                  borderRadius:
+                                    message.sender === "user"
+                                      ? "8px 8px 0px 8px"
+                                      : "0px 8px 8px 8px",
+                                  backgroundColor:
+                                    message.sender === "user"
+                                      ? "#343A40"
+                                      : "#EEEEEE",
+                                  color:
+                                    message.sender === "user"
+                                      ? "white"
+                                      : "black",
+                                  boxShadow: "none",
+                                  maxWidth: "80%",
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    fontSize: "16px",
+                                    lineHeight: "24px",
+                                  }}
+                                >
+                                  {message.text}
+                                </Typography>
+                              </Paper>
+                            </Box>
+                            {message.recommendations &&
+                              message.recommendations.length > 0 && (
+                                <RecommendationList
+                                  title="Type or select any choice"
+                                  items={message.recommendations}
+                                  onSelect={handleRecommendationSelect}
+                                />
+                              )}
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                      {isLoading && (
                         <motion.div
-                          key={index}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{ duration: 0.3 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            marginTop: "10px",
+                          }}
                         >
                           <Box
                             sx={{
                               display: "flex",
-                              justifyContent:
-                                message.sender === "user"
-                                  ? "flex-end"
-                                  : "flex-start",
-                              mb: 1,
+                              flexDirection: "column",
+                              alignItems: "flex-start",
+                              marginBottom: "8px",
+                              backgroundColor: "#f0f0f0",
+                              borderRadius: "8px",
+                              padding: "4px 8px",
                             }}
                           >
-                            <Paper
+                            <Typography
+                              variant="caption"
                               sx={{
-                                p: 1,
-                                borderRadius:
-                                  message.sender === "user"
-                                    ? "8px 8px 0px 8px"
-                                    : "0px 8px 8px 8px",
-                                backgroundColor:
-                                  message.sender === "user"
-                                    ? "#343A40"
-                                    : "#EEEEEE",
-                                color:
-                                  message.sender === "user" ? "white" : "black",
-                                boxShadow: "none",
-                                maxWidth: "80%",
+                                color: "#666",
+                                marginBottom: "4px",
                               }}
                             >
-                              <Typography
-                                sx={{
-                                  fontSize: "16px",
-                                  lineHeight: "24px",
-                                }}
-                              >
-                                {message.text}
-                              </Typography>
-                            </Paper>
+                              Thinking...
+                            </Typography>
+                            <LinearProgress
+                              sx={{
+                                width: "50px",
+                                height: "2px",
+                                backgroundColor: "#e0e0e0",
+                                "& .MuiLinearProgress-bar": {
+                                  backgroundColor: "#666",
+                                },
+                              }}
+                            />
                           </Box>
-                          {message.recommendations &&
-                            message.recommendations.length > 0 && (
-                              <RecommendationList
-                                title="Type or select any choice"
-                                items={message.recommendations}
-                                onSelect={handleRecommendationSelect}
-                              />
-                            )}
+                          <Skeleton
+                            variant="rectangular"
+                            sx={{
+                              borderRadius: "0px 8px 8px 8px",
+                            }}
+                            width={250}
+                            height={35}
+                          />
                         </motion.div>
-                      ))}
-                    </AnimatePresence>
-                    {isLoading && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <Skeleton
-                          variant="rectangular"
-                          sx={{
-                            borderRadius: "0px 8px 8px 8px",
-                          }}
-                          width={250}
-                          height={35}
-                        />
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <Box
-                border={!showChatUI ? "1px solid #CDCDCD" : "1px solid #CDCDCD"}
-                width={"100%"}
-              >
-                <Input
-                  input={input}
-                  handleSend={() => {
-                    handleStartChat(initialMessage);
-                    handleSend();
-                  }}
-                  setInput={setInput}
-                />
-                <Watermark />
-              </Box>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <Box
+                  border={
+                    !showChatUI ? "1px solid #CDCDCD" : "1px solid #CDCDCD"
+                  }
+                  width={"100%"}
+                >
+                  <Input
+                    input={input}
+                    handleSend={() => {
+                      handleStartChat(initialMessage);
+                      handleSend();
+                    }}
+                    setInput={setInput}
+                    back={!showChatUI ? "transparent" : "white"}
+                  />
+                  <Watermark back={!showChatUI ? "transparent" : "white"} />
+                </Box>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </Box>
         )}
       </AnimatePresence>
 

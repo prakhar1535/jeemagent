@@ -33,7 +33,7 @@ const AnimatedIconButton: React.FC<{
             animate={{ opacity: 1, rotate: 0 }}
             exit={{ opacity: 0, rotate: 180 }}
             transition={{ duration: 0.3 }}
-            style={{ position: "absolute" }}
+            style={{ position: "absolute", top: "17px" }}
           >
             <CloseIcon />
           </motion.div>
@@ -46,6 +46,7 @@ const AnimatedIconButton: React.FC<{
             transition={{ duration: 0.3 }}
             style={{
               position: "absolute",
+              top: "10px",
             }}
           >
             <LayersIcon

@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import React from "react";
 
-const Watermark = () => {
+const Watermark = ({ back }: { back: string }) => {
   return (
     <>
       <Box
@@ -9,6 +9,9 @@ const Watermark = () => {
         padding={"9px 16px"}
         width={"100%"}
         justifyContent={"flex-end"}
+        sx={{
+          backgroundColor: back,
+        }}
       >
         <Typography
           sx={{

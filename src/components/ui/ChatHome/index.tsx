@@ -2,12 +2,36 @@ import { Box, Grid2, Typography } from "@mui/material";
 import React from "react";
 import InfoCards from "./components/InfoCards";
 
-const ChatHome = ({ expand }: { expand: boolean }) => {
+const ChatHome = ({
+  expand,
+  marginTop,
+  onInfoCardClick,
+}: {
+  expand: boolean;
+  marginTop: string;
+  onInfoCardClick: (message: string) => void;
+}) => {
   const demoInfo = [
-    { title: "Food 101", subtitle: "Top recommended books" },
-    { title: "Robotics 101", subtitle: "Top recommended books" },
-    { title: "Sales 101", subtitle: "Top recommended books" },
-    { title: "Chat", subtitle: "Top recommended books" },
+    {
+      title: "Food 101",
+      subtitle: "Top recommended books",
+      message: "Give some food recipes recommendations",
+    },
+    {
+      title: "Robotics 101",
+      subtitle: "Top recommended books",
+      message: "Give some food recipes recommendations",
+    },
+    {
+      title: "Sales 101",
+      subtitle: "Top recommended books",
+      message: "Share some effective sales techniques",
+    },
+    {
+      title: "Chat",
+      subtitle: "Top recommended books",
+      message: "Let's start a general conversation",
+    },
   ];
 
   return (
@@ -39,13 +63,17 @@ const ChatHome = ({ expand }: { expand: boolean }) => {
           How can I help you?
         </Typography>
       </Box>
-      <Grid2 container spacing={1} sx={{ marginTop: "144px", marginBottom: 2 }}>
+      <Grid2
+        container
+        spacing={1}
+        sx={{ marginTop: marginTop, marginBottom: 2 }}
+      >
         {demoInfo.map((item, index) => (
           <Grid2 key={index} size={6}>
             <InfoCards
               title={item.title}
               subtitle={item.subtitle}
-              onclick={() => {}}
+              onclick={() => onInfoCardClick(item.message)}
               minwidth={expand ? "190px" : "270px"}
             />
           </Grid2>

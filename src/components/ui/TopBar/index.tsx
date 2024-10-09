@@ -1,23 +1,30 @@
 import React from "react";
-import { Box, Typography, IconButton } from "@mui/material";
-import LayersIcon from "@mui/icons-material/Layers";
+import { Box, IconButton, Typography } from "@mui/material";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-
-interface Props {
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import LayersIcon from "@mui/icons-material/Layers";
+interface TopBarProps {
   expand: boolean;
-  setExpand: (value: React.SetStateAction<boolean>) => void;
-  backgroundColor?: string;
+  setExpand: () => void;
+  backgroundColor: string;
+  onReset: () => void;
 }
 
-const TopBar: React.FC<Props> = ({ expand, setExpand, backgroundColor }) => {
+const TopBar: React.FC<TopBarProps> = ({
+  expand,
+  setExpand,
+  backgroundColor,
+  onReset,
+}) => {
   return (
     <Box
-      display={"flex"}
-      justifyContent={"space-between"}
-      padding={"15px"}
       sx={{
-        backgroundColor: backgroundColor ? backgroundColor : "unset",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "10px",
+        backgroundColor: backgroundColor,
       }}
     >
       <Box display={"flex"} gap={"8px"} alignItems={"center"}>
@@ -45,27 +52,33 @@ const TopBar: React.FC<Props> = ({ expand, setExpand, backgroundColor }) => {
           Jeemagent
         </Typography>
       </Box>
-      <IconButton onClick={() => setExpand(!expand)}>
-        {expand ? (
-          <OpenInFullIcon
+      <Box>
+        <IconButton
+          onClick={onReset}
+          sx={{ color: "white", marginRight: "8px" }}
+        >
+          <RestartAltIcon
             sx={{
-              cursor: "pointer",
-              color: "white",
               width: "18px",
-              height: "18px",
             }}
           />
-        ) : (
-          <CloseFullscreenIcon
-            sx={{
-              cursor: "pointer",
-              color: "white",
-              width: "18px",
-              height: "18px",
-            }}
-          />
-        )}
-      </IconButton>
+        </IconButton>
+        <IconButton onClick={setExpand} sx={{ color: "white" }}>
+          {expand ? (
+            <OpenInFullIcon
+              sx={{
+                width: "18px",
+              }}
+            />
+          ) : (
+            <CloseFullscreenIcon
+              sx={{
+                width: "18px",
+              }}
+            />
+          )}
+        </IconButton>
+      </Box>
     </Box>
   );
 };

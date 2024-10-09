@@ -6,9 +6,10 @@ interface Inputs {
   input: string;
   setInput: (value: string) => void;
   handleSend: () => void;
+  back: string;
 }
 
-const Input: React.FC<Inputs> = ({ input, setInput, handleSend }) => {
+const Input: React.FC<Inputs> = ({ input, setInput, handleSend, back }) => {
   return (
     <Box
       sx={{
@@ -17,6 +18,7 @@ const Input: React.FC<Inputs> = ({ input, setInput, handleSend }) => {
         padding: "4px 16px",
         width: "100%",
         margin: "0 auto",
+        backgroundColor: back,
       }}
     >
       <InputBase
