@@ -19,6 +19,7 @@ const AnimatedIconButton: React.FC<{
         width: "60px",
         height: "60px",
         position: "relative",
+        right: "10px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
