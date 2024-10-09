@@ -124,6 +124,7 @@ const ChatbotUI: React.FC<ChatbotUIProps> = ({ chatbotId, initialMessage }) => {
         </Box>
         <Box sx={{ display: "flex" }}>
           <Input
+            back="white"
             setInput={setInput}
             input={input}
             handleSend={() => handleSend()}
