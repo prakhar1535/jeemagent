@@ -136,7 +136,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
           <Box
             sx={{
               width: expand
-                ? { md: "22%", xs: "100%" }
+                ? { md: "420px", xs: "100%" }
                 : { md: "575px", xs: "100%" },
             }}
           >
