@@ -21,9 +21,14 @@ const ChatFooter: React.FC<Props> = ({ onStartChat }) => {
       <Box>
         {" "}
         <Box sx={{ borderTop: "2px solid #CDCDCD", padding: "10px" }}>
-          <Input input={input} handleSend={handleSend} setInput={setInput} />
+          <Input
+            back="white"
+            input={input}
+            handleSend={handleSend}
+            setInput={setInput}
+          />
         </Box>
-        <Watermark />
+        <Watermark back="white" />
       </Box>
     </>
   );
