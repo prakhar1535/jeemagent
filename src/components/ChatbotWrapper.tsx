@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  Skeleton,
-  LinearProgress,
-} from "@mui/material";
+import { Box, Paper, Typography, LinearProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatHome from "../components/ui/ChatHome";
 import TopBar from "./ui/TopBar";
@@ -139,7 +133,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
               transition={{ duration: 0.3 }}
               style={{
                 borderRadius: "15px",
-                height: expand ? "637px" : "637px",
+                height: expand ? "635px" : "635px",
                 maxHeight: "650px",
                 display: "flex",
                 flexDirection: "column",
@@ -178,7 +172,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                     >
                       <ChatHome
                         expand={expand}
-                        marginTop={expand ? "144px" : "192px"}
+                        marginTop={expand ? "144px" : "144px"}
                         onInfoCardClick={handleInfoCardClick}
                       />
                     </motion.div>
@@ -298,14 +292,14 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                               }}
                             />
                           </Box>
-                          <Skeleton
+                          {/* <Skeleton
                             variant="rectangular"
                             sx={{
                               borderRadius: "0px 8px 8px 8px",
                             }}
                             width={250}
                             height={35}
-                          />
+                          /> */}
                         </motion.div>
                       )}
                     </motion.div>

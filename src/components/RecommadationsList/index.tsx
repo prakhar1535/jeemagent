@@ -27,7 +27,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         mt: 2,
         mb: 2,
         backgroundColor: "#f5f5f5",
-        borderRadius: "8px",
+        borderRadius: "0px 8px 8px 8px",
         overflow: "hidden",
       }}
     >
