@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
 import React, { useState, useEffect } from "react";
@@ -9,7 +10,9 @@ import Input from "./ui/Input";
 import Watermark from "./ui/Watermark";
 import RecommendationList from "./RecommadationsList";
 import AnimatedIconButton from "./WidgetButton";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 interface Message {
   text: string;
   sender: "user" | "bot";
@@ -26,6 +29,17 @@ interface Recommendation {
 }
 
 const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
+  const MarkdownComponents = {
+    // @ts-ignore
+    p: ({ node, ...props }) => <Typography {...props} />,
+    // @ts-ignore
+    ul: ({ node, ...props }) => <Box component="ul" ml={2} {...props} />,
+    // @ts-ignore
+    ol: ({ node, ...props }) => <Box component="ol" ml={2} {...props} />,
+    // @ts-ignore
+    li: ({ node, ...props }) => <Box component="li" mb={0} {...props} />,
+  };
+
   const [showChatUI, setShowChatUI] = useState(false);
   const [initialMessage, setInitialMessage] = useState("");
   const [expand, setExpand] = useState(true);
@@ -182,7 +196,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.1 }}
                       style={{
                         flexGrow: 1,
                         overflowY: "auto",
@@ -197,7 +211,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.1 }}
                           >
                             <Box
                               sx={{
@@ -228,14 +242,14 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                   maxWidth: "80%",
                                 }}
                               >
-                                <Typography
-                                  sx={{
-                                    fontSize: "16px",
-                                    lineHeight: "24px",
-                                  }}
+                                <ReactMarkdown
+                                  // @ts-ignore
+                                  components={MarkdownComponents}
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeRaw]}
                                 >
                                   {message.text}
-                                </Typography>
+                                </ReactMarkdown>
                               </Paper>
                             </Box>
                             {message.recommendations &&
@@ -268,7 +282,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                               alignItems: "flex-start",
                               marginBottom: "8px",
                               backgroundColor: "#f0f0f0",
-                              borderRadius: "8px",
+                              borderRadius: "0px 8px 8px 8px",
                               padding: "4px 8px",
                             }}
                           >
