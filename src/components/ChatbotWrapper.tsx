@@ -60,7 +60,6 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
-
   const handleSend = async (message: string = input) => {
     if (message.trim()) {
       const userMessage: Message = { text: message, sender: "user" };
@@ -286,7 +285,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                   message.sender === "user"
                                     ? "flex-end"
                                     : "flex-start",
-                                mb: 1,
+                                mb: messages[messages.length - 1] ? 1 : 2,
                               }}
                             >
                               <Paper
@@ -383,33 +382,6 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                           /> */}
                         </motion.div>
                       )}
-                      {suggestedMessages.length > 0 && (
-                        <Box
-                          ref={suggestionsRef}
-                          sx={{
-                            mt: "auto",
-                            mb: 1,
-                            px: 2,
-                            overflowX: "auto",
-                            whiteSpace: "nowrap",
-                            "&::-webkit-scrollbar": { display: "none" },
-                            scrollbarWidth: "none",
-                          }}
-                          onMouseDown={handleMouseDown}
-                          onMouseLeave={handleMouseLeave}
-                          onMouseUp={handleMouseUp}
-                          onMouseMove={handleMouseMove}
-                        >
-                          {suggestedMessages.map((msg, index) => (
-                            <Chip
-                              key={index}
-                              label={msg}
-                              onClick={() => handleSuggestedMessageClick(msg)}
-                              sx={{ mr: 1, my: 0.5 }}
-                            />
-                          ))}
-                        </Box>
-                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -419,6 +391,39 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                   }
                   width={"100%"}
                 >
+                  {suggestedMessages.length > 0 && (
+                    <Box
+                      sx={{
+                        backgroundColor: "white",
+                        pt: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          overflowX: "auto",
+                          whiteSpace: "nowrap",
+                          "&::-webkit-scrollbar": { display: "none" },
+                          scrollbarWidth: "none",
+                        }}
+                      >
+                        {showChatUI &&
+                          suggestedMessages.map((msg, index) => (
+                            <Chip
+                              key={index}
+                              label={msg}
+                              onClick={() => handleSuggestedMessageClick(msg)}
+                              sx={{
+                                mr: 1,
+                                my: 0.5,
+                                bgcolor: "#343A40",
+                                color: "white",
+                              }}
+                            />
+                          ))}
+                      </Box>
+                    </Box>
+                  )}
                   <Input
                     input={input}
                     handleSend={() => {
