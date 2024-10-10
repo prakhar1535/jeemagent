@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 "use client";
-import React, { useState, useEffect } from "react";
-import { Box, Paper, Typography, LinearProgress } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Box,
+  Paper,
+  Typography,
+  LinearProgress,
+  IconButton,
+  Chip,
+} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatHome from "../components/ui/ChatHome";
 import TopBar from "./ui/TopBar";
@@ -48,7 +55,11 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  console.log(error);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
 
   const handleSend = async (message: string = input) => {
     if (message.trim()) {
@@ -118,7 +129,62 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
     setInput("");
     setError(null);
   };
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (suggestionsRef.current?.offsetLeft || 0));
+    setScrollLeft(suggestionsRef.current?.scrollLeft || 0);
+  };
 
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - (suggestionsRef.current?.offsetLeft || 0);
+    const walk = (x - startX) * 2; // Adjust scrolling speed
+    if (suggestionsRef.current) {
+      suggestionsRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+  const generateSuggestions = async (lastBotMessage: string) => {
+    try {
+      const response = await fetch(`/api/chat?chatbotId=${chatbotId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Based on your last message: "${lastBotMessage}", generate 3-4 follow-up questions that a user might ask. Provide only the questions, separated by newlines.`,
+        }),
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      const suggestions = data.reply
+        .split("\n")
+        .filter((s: string) => s.trim() !== "")
+        .map((s: string) => s.trim().replace(/^-\s*/, "")); // Remove leading "-" if present
+      setSuggestedMessages(suggestions);
+    } catch (error) {
+      console.error("Failed to generate suggestions:", error);
+      setSuggestedMessages([]);
+    }
+  };
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.sender === "bot") {
+        generateSuggestions(lastMessage.text);
+      }
+    }
+  }, [messages]);
+  const handleSuggestedMessageClick = (message: string) => {
+    handleSend(message);
+  };
   return (
     <Box
       sx={{
@@ -141,9 +207,9 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
             }}
           >
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 1, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              exit={{ opacity: 1, y: 20 }}
               transition={{ duration: 0.3 }}
               style={{
                 borderRadius: "15px",
@@ -181,7 +247,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                       key="chatHome"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      exit={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
                       <ChatHome
@@ -193,7 +259,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                   ) : (
                     <motion.div
                       key="chatUI"
-                      initial={{ opacity: 0 }}
+                      initial={{ opacity: 1 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.1 }}
@@ -263,6 +329,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                           </motion.div>
                         ))}
                       </AnimatePresence>
+
                       {isLoading && (
                         <motion.div
                           initial={{ opacity: 0 }}
@@ -315,6 +382,33 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                             height={35}
                           /> */}
                         </motion.div>
+                      )}
+                      {suggestedMessages.length > 0 && (
+                        <Box
+                          ref={suggestionsRef}
+                          sx={{
+                            mt: "auto",
+                            mb: 1,
+                            px: 2,
+                            overflowX: "auto",
+                            whiteSpace: "nowrap",
+                            "&::-webkit-scrollbar": { display: "none" },
+                            scrollbarWidth: "none",
+                          }}
+                          onMouseDown={handleMouseDown}
+                          onMouseLeave={handleMouseLeave}
+                          onMouseUp={handleMouseUp}
+                          onMouseMove={handleMouseMove}
+                        >
+                          {suggestedMessages.map((msg, index) => (
+                            <Chip
+                              key={index}
+                              label={msg}
+                              onClick={() => handleSuggestedMessageClick(msg)}
+                              sx={{ mr: 1, my: 0.5 }}
+                            />
+                          ))}
+                        </Box>
                       )}
                     </motion.div>
                   )}
