@@ -9,7 +9,12 @@ import {
   LinearProgress,
   IconButton,
   Chip,
+  TextField,
+  Button,
+  Modal,
 } from "@mui/material";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatHome from "../components/ui/ChatHome";
 import TopBar from "./ui/TopBar";
@@ -21,6 +26,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 interface Message {
+  id?: string;
   text: string;
   sender: "user" | "bot";
   recommendations?: Recommendation[];
@@ -60,6 +66,12 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [currentFeedbackMessageId, setCurrentFeedbackMessageId] = useState<
+    string | null
+  >(null);
   const handleSend = async (message: string = input) => {
     if (message.trim()) {
       const userMessage: Message = { text: message, sender: "user" };
@@ -128,28 +140,52 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
     setInput("");
     setError(null);
   };
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (suggestionsRef.current?.offsetLeft || 0));
-    setScrollLeft(suggestionsRef.current?.scrollLeft || 0);
-  };
 
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - (suggestionsRef.current?.offsetLeft || 0);
-    const walk = (x - startX) * 2; // Adjust scrolling speed
-    if (suggestionsRef.current) {
-      suggestionsRef.current.scrollLeft = scrollLeft - walk;
+  const handleFeedback = async (
+    messageId: string,
+    isPositive: boolean,
+    feedbackText: string = "",
+    score: number
+  ) => {
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId,
+          isPositive,
+          feedbackText,
+          chatbotId,
+          score,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit feedback");
+      }
+      // Optionally, update UI to show feedback was received
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      // Optionally, show error message to user
     }
+  };
+
+  const handleThumbsUp = (messageId: string, score: number) => {
+    handleFeedback(messageId, true, "positive feedback", 1);
+  };
+
+  const handleThumbsDown = (messageId: string, score: number) => {
+    setCurrentFeedbackMessageId(messageId);
+    setFeedbackModalOpen(true);
+  };
+
+  const handleFeedbackSubmit = () => {
+    if (currentFeedbackMessageId) {
+      handleFeedback(currentFeedbackMessageId, false, feedbackMessage, 0);
+    }
+    setFeedbackModalOpen(false);
+    setFeedbackMessage("");
+    setCurrentFeedbackMessageId(null);
   };
   const generateSuggestions = async (lastBotMessage: string) => {
     try {
@@ -287,6 +323,10 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                     : "flex-start",
                                 mb: messages[messages.length - 1] ? 1 : 2,
                               }}
+                              onMouseEnter={() =>
+                                setHoveredMessageId(String(index))
+                              }
+                              onMouseLeave={() => setHoveredMessageId(null)}
                             >
                               <Paper
                                 sx={{
@@ -316,6 +356,33 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                   {message.text}
                                 </ReactMarkdown>
                               </Paper>
+                              {message.sender === "bot" &&
+                                hoveredMessageId === String(index) && (
+                                  <Box
+                                    sx={{
+                                      position: "absolute",
+                                      top: 2,
+                                      right: "60px",
+                                    }}
+                                  >
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleThumbsUp(String(index) || "", 1)
+                                      }
+                                    >
+                                      <ThumbUpIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleThumbsDown(String(index) || "", 0)
+                                      }
+                                    >
+                                      <ThumbDownIcon fontSize="small" />
+                                    </IconButton>
+                                  </Box>
+                                )}
                             </Box>
                             {message.recommendations &&
                               message.recommendations.length > 0 && (
@@ -386,16 +453,15 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                   )}
                 </AnimatePresence>
                 <Box
-                  border={
-                    !showChatUI ? "1px solid #CDCDCD" : "1px solid #CDCDCD"
-                  }
+                  border={!showChatUI ? "1px solid #CDCDCD" : ""}
                   width={"100%"}
                 >
-                  {suggestedMessages.length > 0 && (
+                  {showChatUI && suggestedMessages.length > 0 && (
                     <Box
                       sx={{
                         backgroundColor: "white",
-                        pt: 1,
+                        pt: "55px",
+                        border: "none",
                       }}
                     >
                       <Box
@@ -405,21 +471,35 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                           whiteSpace: "nowrap",
                           "&::-webkit-scrollbar": { display: "none" },
                           scrollbarWidth: "none",
+                          border: "none",
                         }}
                       >
                         {showChatUI &&
                           suggestedMessages.map((msg, index) => (
-                            <Chip
+                            <Box
                               key={index}
-                              label={msg}
                               onClick={() => handleSuggestedMessageClick(msg)}
                               sx={{
                                 mr: 1,
-                                my: 0.5,
-                                bgcolor: "#343A40",
-                                color: "white",
+                                my: 1,
+                                bgcolor: "#EEEEEE",
+                                borderRadius: "8px",
+                                padding: "6px 8px",
+                                color: "black",
+                                border: "1px solid #D2D2D2",
+                                cursor: "pointer",
                               }}
-                            />
+                            >
+                              <Typography
+                                sx={{
+                                  fontSize: "14px",
+                                  fontWeight: "500",
+                                  color: "#151515",
+                                }}
+                              >
+                                {msg}
+                              </Typography>
+                            </Box>
                           ))}
                       </Box>
                     </Box>
@@ -442,6 +522,41 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
       </AnimatePresence>
 
       <AnimatedIconButton isOpen={isOpen} toggleChat={toggleChat} />
+      <Modal
+        open={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        aria-labelledby="feedback-modal-title"
+        aria-describedby="feedback-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <h2 id="feedback-modal-title">Provide Feedback</h2>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            placeholder="What could be improved?"
+            value={feedbackMessage}
+            onChange={(e) => setFeedbackMessage(e.target.value)}
+            sx={{ my: 2 }}
+          />
+          <Button variant="contained" onClick={handleFeedbackSubmit}>
+            Submit feedback
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   );
 };

@@ -47,7 +47,7 @@ const AnimatedIconButton: React.FC<{
             transition={{ duration: 0.3 }}
             style={{
               position: "absolute",
-              top: "10px",
+              top: "12px",
             }}
           >
             <LayersIcon
