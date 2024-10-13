@@ -60,6 +60,7 @@ const TopBar: React.FC<TopBarProps> = ({
           <RestartAltIcon
             sx={{
               width: "18px",
+              height: "18px",
             }}
           />
         </IconButton>
@@ -68,6 +69,7 @@ const TopBar: React.FC<TopBarProps> = ({
             <OpenInFullIcon
               sx={{
                 width: "18px",
+                height: "18px",
               }}
             />
           ) : (

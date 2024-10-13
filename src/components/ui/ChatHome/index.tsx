@@ -4,12 +4,15 @@ import InfoCards from "./components/InfoCards";
 
 const ChatHome = ({
   expand,
-  marginTop,
+  marginTopmd,
+  marginTopxs,
   onInfoCardClick,
 }: {
   expand: boolean;
-  marginTop: string;
+
   onInfoCardClick: (message: string) => void;
+  marginTopmd?: string;
+  marginTopxs?: string;
 }) => {
   const demoInfo = [
     {
@@ -66,7 +69,10 @@ const ChatHome = ({
       <Grid2
         container
         spacing={1}
-        sx={{ marginTop: marginTop, marginBottom: 2 }}
+        sx={{
+          marginTop: { md: marginTopmd, xs: marginTopxs },
+          marginBottom: 2,
+        }}
       >
         {demoInfo.map((item, index) => (
           <Grid2 key={index} size={6}>

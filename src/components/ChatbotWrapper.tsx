@@ -61,10 +61,6 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
   const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -246,200 +242,211 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 1, y: 20 }}
               transition={{ duration: 0.3 }}
-              style={{
-                borderRadius: "15px",
-                height: expand ? "635px" : "635px",
-                maxHeight: "650px",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-                marginBottom: "10px",
-              }}
             >
-              <motion.div
-                initial={false}
-                animate={{
-                  background: !showChatUI
-                    ? "linear-gradient(to bottom, #343A40, #808080, #F7F7F7)"
-                    : "transparent",
-                }}
-                transition={{ duration: 0.5 }}
-                style={{
-                  height: "100%",
+              <Box
+                sx={{
+                  borderRadius: "15px",
+                  height: expand ? "635px" : "635px",
+                  maxHeight: "650px",
                   display: "flex",
                   flexDirection: "column",
+                  overflow: "hidden",
+                  marginBottom: "10px",
+                  border: "none !important",
+                  "& > *": {
+                    border: "none !important",
+                  },
                 }}
               >
-                <TopBar
-                  expand={expand}
-                  setExpand={() => setExpand(!expand)}
-                  backgroundColor={showChatUI ? "#343A40" : "unset"}
-                  onReset={resetChat}
-                />
-                <AnimatePresence mode="wait">
-                  {!showChatUI ? (
-                    <motion.div
-                      key="chatHome"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChatHome
-                        expand={expand}
-                        marginTop={expand ? "144px" : "144px"}
-                        onInfoCardClick={handleInfoCardClick}
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="chatUI"
-                      initial={{ opacity: 1 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.1 }}
-                      style={{
-                        flexGrow: 1,
-                        overflowY: "auto",
-                        padding: "12px",
-                        backgroundColor: "white",
-                      }}
-                    >
-                      <AnimatePresence>
-                        {messages.map((message, index) => (
+                <motion.div
+                  initial={false}
+                  animate={{
+                    background: !showChatUI
+                      ? "linear-gradient(to bottom, #343A40, #808080, #F7F7F7)"
+                      : "transparent",
+                  }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: !showChatUI ? "space-between" : "unset",
+                  }}
+                >
+                  <TopBar
+                    expand={expand}
+                    setExpand={() => setExpand(!expand)}
+                    backgroundColor={showChatUI ? "#343A40" : "unset"}
+                    onReset={resetChat}
+                  />
+                  <AnimatePresence mode="wait">
+                    {!showChatUI ? (
+                      <motion.div
+                        key="chatHome"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChatHome
+                          expand={expand}
+                          marginTopmd={expand ? "144px" : "191px"}
+                          marginTopxs={"144px"}
+                          onInfoCardClick={handleInfoCardClick}
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="chatUI"
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.1 }}
+                        style={{
+                          flexGrow: 1,
+                          overflowY: "auto",
+                          padding: "12px",
+                          backgroundColor: "white",
+                        }}
+                      >
+                        <AnimatePresence>
+                          {messages.map((message, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -20 }}
+                              transition={{ duration: 0.1 }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent:
+                                    message.sender === "user"
+                                      ? "flex-end"
+                                      : "flex-start",
+                                  mb: messages[messages.length - 1] ? 1 : 2,
+                                }}
+                                onMouseEnter={() =>
+                                  setHoveredMessageId(String(index))
+                                }
+                                onMouseLeave={() => setHoveredMessageId(null)}
+                              >
+                                <Box
+                                  sx={{
+                                    p: 1,
+                                    borderRadius:
+                                      message.sender === "user"
+                                        ? "8px 8px 0px 8px"
+                                        : "0px 8px 8px 8px",
+                                    backgroundColor:
+                                      message.sender === "user"
+                                        ? "#343A40"
+                                        : "#EEEEEE",
+                                    color:
+                                      message.sender === "user"
+                                        ? "white"
+                                        : "black",
+                                    boxShadow: "none",
+                                    maxWidth: "80%",
+                                  }}
+                                >
+                                  <ReactMarkdown
+                                    // @ts-ignore
+                                    components={MarkdownComponents}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw]}
+                                  >
+                                    {message.text}
+                                  </ReactMarkdown>
+                                </Box>
+                                {message.sender === "bot" &&
+                                  hoveredMessageId === String(index) && (
+                                    <Box
+                                      sx={{
+                                        position: "absolute",
+                                        top: 2,
+                                        right: "60px",
+                                      }}
+                                    >
+                                      <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                          handleThumbsUp(String(index) || "", 1)
+                                        }
+                                      >
+                                        <ThumbUpIcon fontSize="small" />
+                                      </IconButton>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                          handleThumbsDown(
+                                            String(index) || "",
+                                            0
+                                          )
+                                        }
+                                      >
+                                        <ThumbDownIcon fontSize="small" />
+                                      </IconButton>
+                                    </Box>
+                                  )}
+                              </Box>
+                              {message.recommendations &&
+                                message.recommendations.length > 0 && (
+                                  <RecommendationList
+                                    title="Type or select any choice"
+                                    items={message.recommendations}
+                                    onSelect={handleRecommendationSelect}
+                                  />
+                                )}
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+
+                        {isLoading && (
                           <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.1 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-start",
+                              marginTop: "10px",
+                            }}
                           >
                             <Box
                               sx={{
                                 display: "flex",
-                                justifyContent:
-                                  message.sender === "user"
-                                    ? "flex-end"
-                                    : "flex-start",
-                                mb: messages[messages.length - 1] ? 1 : 2,
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                                marginBottom: "8px",
+                                backgroundColor: "#f0f0f0",
+                                borderRadius: "0px 8px 8px 8px",
+                                padding: "4px 8px",
                               }}
-                              onMouseEnter={() =>
-                                setHoveredMessageId(String(index))
-                              }
-                              onMouseLeave={() => setHoveredMessageId(null)}
                             >
-                              <Paper
+                              <Typography
+                                variant="caption"
                                 sx={{
-                                  p: 1,
-                                  borderRadius:
-                                    message.sender === "user"
-                                      ? "8px 8px 0px 8px"
-                                      : "0px 8px 8px 8px",
-                                  backgroundColor:
-                                    message.sender === "user"
-                                      ? "#343A40"
-                                      : "#EEEEEE",
-                                  color:
-                                    message.sender === "user"
-                                      ? "white"
-                                      : "black",
-                                  boxShadow: "none",
-                                  maxWidth: "80%",
+                                  color: "#666",
+                                  marginBottom: "4px",
                                 }}
                               >
-                                <ReactMarkdown
-                                  // @ts-ignore
-                                  components={MarkdownComponents}
-                                  remarkPlugins={[remarkGfm]}
-                                  rehypePlugins={[rehypeRaw]}
-                                >
-                                  {message.text}
-                                </ReactMarkdown>
-                              </Paper>
-                              {message.sender === "bot" &&
-                                hoveredMessageId === String(index) && (
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      top: 2,
-                                      right: "60px",
-                                    }}
-                                  >
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        handleThumbsUp(String(index) || "", 1)
-                                      }
-                                    >
-                                      <ThumbUpIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        handleThumbsDown(String(index) || "", 0)
-                                      }
-                                    >
-                                      <ThumbDownIcon fontSize="small" />
-                                    </IconButton>
-                                  </Box>
-                                )}
+                                Thinking...
+                              </Typography>
+                              <LinearProgress
+                                sx={{
+                                  width: "50px",
+                                  height: "2px",
+                                  backgroundColor: "#e0e0e0",
+                                  "& .MuiLinearProgress-bar": {
+                                    backgroundColor: "#666",
+                                  },
+                                }}
+                              />
                             </Box>
-                            {message.recommendations &&
-                              message.recommendations.length > 0 && (
-                                <RecommendationList
-                                  title="Type or select any choice"
-                                  items={message.recommendations}
-                                  onSelect={handleRecommendationSelect}
-                                />
-                              )}
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-
-                      {isLoading && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "flex-start",
-                            marginTop: "10px",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                              marginBottom: "8px",
-                              backgroundColor: "#f0f0f0",
-                              borderRadius: "0px 8px 8px 8px",
-                              padding: "4px 8px",
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: "#666",
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Thinking...
-                            </Typography>
-                            <LinearProgress
-                              sx={{
-                                width: "50px",
-                                height: "2px",
-                                backgroundColor: "#e0e0e0",
-                                "& .MuiLinearProgress-bar": {
-                                  backgroundColor: "#666",
-                                },
-                              }}
-                            />
-                          </Box>
-                          {/* <Skeleton
+                            {/* <Skeleton
                             variant="rectangular"
                             sx={{
                               borderRadius: "0px 8px 8px 8px",
@@ -447,75 +454,76 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                             width={250}
                             height={35}
                           /> */}
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <Box
-                  border={!showChatUI ? "1px solid #CDCDCD" : ""}
-                  width={"100%"}
-                >
-                  {showChatUI && suggestedMessages.length > 0 && (
-                    <Box
-                      sx={{
-                        backgroundColor: "white",
-                        pt: "55px",
-                        border: "none",
-                      }}
-                    >
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <Box
+                    border={!showChatUI ? "1px solid #CDCDCD" : "transparent"}
+                    width={"100%"}
+                  >
+                    {showChatUI && suggestedMessages.length > 0 && (
                       <Box
                         sx={{
-                          display: "flex",
-                          overflowX: "auto",
-                          whiteSpace: "nowrap",
-                          "&::-webkit-scrollbar": { display: "none" },
-                          scrollbarWidth: "none",
+                          backgroundColor: "white",
+                          pt: "55px",
                           border: "none",
                         }}
                       >
-                        {showChatUI &&
-                          suggestedMessages.map((msg, index) => (
-                            <Box
-                              key={index}
-                              onClick={() => handleSuggestedMessageClick(msg)}
-                              sx={{
-                                mr: 1,
-                                my: 1,
-                                bgcolor: "#EEEEEE",
-                                borderRadius: "8px",
-                                padding: "6px 8px",
-                                color: "black",
-                                border: "1px solid #D2D2D2",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <Typography
+                        <Box
+                          sx={{
+                            display: "flex",
+                            overflowX: "auto",
+                            whiteSpace: "nowrap",
+                            "&::-webkit-scrollbar": { display: "none" },
+                            scrollbarWidth: "none",
+                            border: "none",
+                          }}
+                        >
+                          {showChatUI &&
+                            suggestedMessages.map((msg, index) => (
+                              <Box
+                                key={index}
+                                onClick={() => handleSuggestedMessageClick(msg)}
                                 sx={{
-                                  fontSize: "14px",
-                                  fontWeight: "500",
-                                  color: "#151515",
+                                  ml: "12px",
+                                  my: 1,
+                                  bgcolor: "#EEEEEE",
+                                  borderRadius: "8px",
+                                  padding: "6px 8px",
+                                  color: "black",
+                                  border: "1px solid #D2D2D2",
+                                  cursor: "pointer",
                                 }}
                               >
-                                {msg}
-                              </Typography>
-                            </Box>
-                          ))}
+                                <Typography
+                                  sx={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    color: "#151515",
+                                  }}
+                                >
+                                  {msg}
+                                </Typography>
+                              </Box>
+                            ))}
+                        </Box>
                       </Box>
-                    </Box>
-                  )}
-                  <Input
-                    input={input}
-                    handleSend={() => {
-                      handleStartChat(initialMessage);
-                      handleSend();
-                    }}
-                    setInput={setInput}
-                    back={!showChatUI ? "transparent" : "white"}
-                  />
-                  <Watermark back={!showChatUI ? "transparent" : "white"} />
-                </Box>
-              </motion.div>
+                    )}
+                    <Input
+                      input={input}
+                      handleSend={() => {
+                        handleStartChat(initialMessage);
+                        handleSend();
+                      }}
+                      setInput={setInput}
+                      back={!showChatUI ? "transparent" : "white"}
+                    />
+                    <Watermark back={!showChatUI ? "transparent" : "white"} />
+                  </Box>
+                </motion.div>
+              </Box>
             </motion.div>
           </Box>
         )}
