@@ -50,7 +50,22 @@ export async function POST(request: NextRequest) {
         new HumanMessage(`Based on the following conversation generate a list of 4-6 relevant recommendations or options. 
   Format the output as a JSON array of objects, where each object has a 'title' and a 'subtitle' property. 
   The 'title' should be a short, descriptive name, and the 'subtitle' should provide a brief explanation or context.
+  if the recommendatio is a product that can be bought online or does have a price you can also add 'link' and 'price' in the object.
   Do not include any markdown formatting or code blocks. Just provide the raw JSON array.
+
+  There are some Must Follows:
+  1) You should provide a json which contain 'title', 'subtitle', 'link', 'price'.
+  2) 'title' and 'subtitle' could be available every time a recommendation is given.
+  3) 'link' and 'price' should be available only when the recommendation is a product or does have a price which available online.
+  4) only provide valid links to the product dont provide 'example.com' or 'exampleproduct.com' something like this.
+  5) Only provide the link and price when there is a specific product not when we are trying to recall group of variants, brands or products for example: a variant in cars is sedan and there can be various models inside it so dont provide link and price for sedan because it may not have a specific link to any product but if you provide a specific car model or brand then provide the link or price, and this is just an example for cars you have to use for every type of product or recommendations you have asked for.
+  5) the final structure of the output shuould be like this :
+            {
+            "title" : title of the recommendation,
+            "subtitle" : subtitle of the recommendation,
+            "link" : link to the product if available otherwise keep it undefined,
+            "price" : price of the product if available otherwise keep it undefined
+            }
   
   User: ${message}
   AI: ${response.response}

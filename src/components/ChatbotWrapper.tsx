@@ -504,7 +504,9 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                     color: "#151515",
                                   }}
                                 >
-                                  {msg}
+                                  {msg.length > 10
+                                    ? `${msg.substring(0, 25)}...`
+                                    : msg}
                                 </Typography>
                               </Box>
                             ))}
