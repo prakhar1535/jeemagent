@@ -629,7 +629,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "90%",
+            width: { md: "30%", xs: "90%" },
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 2,
