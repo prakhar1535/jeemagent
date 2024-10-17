@@ -14,6 +14,8 @@ import {
   Modal,
 } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbUpOffAltIcon from "@mui/icons-material/ThumbDownAltOutlined";
+import ThumbUpOnAltIcon from "@mui/icons-material/ThumbUpAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatHome from "../components/ui/ChatHome";
@@ -30,6 +32,7 @@ interface Message {
   text: string;
   sender: "user" | "bot";
   recommendations?: Recommendation[];
+  feedback?: "positive" | "negative" | null;
 }
 
 interface ChatbotWrapperProps {
@@ -65,6 +68,12 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [feedbackPos, setFeedbackPos] = useState(false);
+  const [feedbackNeg, setFeedbackNeg] = useState(false);
+  const [feedbackState, setFeedbackState] = useState<
+    Record<number, "positive" | "negative" | null>
+  >({});
   const [currentFeedbackMessageId, setCurrentFeedbackMessageId] = useState<
     string | null
   >(null);
@@ -143,6 +152,10 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
     feedbackText: string = "",
     score: number
   ) => {
+    setFeedbackState((prevState) => ({
+      ...prevState,
+      [parseInt(messageId)]: isPositive ? "positive" : "negative",
+    }));
     try {
       const response = await fetch("/api/feedback", {
         method: "POST",
@@ -166,6 +179,11 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
     }
   };
 
+  const thumbsAnimation = {
+    scale: [1, 1.2, 1],
+    rotate: [0, 10, -10, 0],
+    transition: { duration: 0.5 },
+  };
   const handleThumbsUp = (messageId: string, score: number) => {
     handleFeedback(messageId, true, "positive feedback", 1);
   };
@@ -213,6 +231,19 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
       }
     }
   }, [messages]);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const scrollHeight = chatContainerRef.current.scrollHeight;
+      const height = chatContainerRef.current.clientHeight;
+      const maxScrollTop = scrollHeight - height;
+      chatContainerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
   const handleSuggestedMessageClick = (message: string) => {
     handleSend(message);
   };
@@ -252,6 +283,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                   flexDirection: "column",
                   overflow: "hidden",
                   marginBottom: "10px",
+                  boxShadow: "2px 2px 4px 0px #D1D1D1",
                   border: "none !important",
                   "& > *": {
                     border: "none !important",
@@ -298,6 +330,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                     ) : (
                       <motion.div
                         key="chatUI"
+                        ref={chatContainerRef}
                         initial={{ opacity: 1 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -321,11 +354,12 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                               <Box
                                 sx={{
                                   display: "flex",
+                                  alignItems: "center",
                                   justifyContent:
                                     message.sender === "user"
                                       ? "flex-end"
                                       : "flex-start",
-                                  mb: messages[messages.length - 1] ? 1 : 2,
+                                  mb: "1.5rem",
                                 }}
                                 onMouseEnter={() =>
                                   setHoveredMessageId(String(index))
@@ -348,7 +382,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                         ? "white"
                                         : "black",
                                     boxShadow: "none",
-                                    maxWidth: "80%",
+                                    maxWidth: "85%",
                                   }}
                                 >
                                   <ReactMarkdown
@@ -360,36 +394,81 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                     {message.text}
                                   </ReactMarkdown>
                                 </Box>
-                                {message.sender === "bot" &&
-                                  hoveredMessageId === String(index) && (
-                                    <Box
-                                      sx={{
-                                        position: "absolute",
-                                        top: 2,
-                                        right: "60px",
-                                      }}
-                                    >
-                                      <IconButton
-                                        size="small"
-                                        onClick={() =>
-                                          handleThumbsUp(String(index) || "", 1)
-                                        }
-                                      >
-                                        <ThumbUpIcon fontSize="small" />
-                                      </IconButton>
-                                      <IconButton
-                                        size="small"
-                                        onClick={() =>
-                                          handleThumbsDown(
-                                            String(index) || "",
-                                            0
-                                          )
-                                        }
-                                      >
-                                        <ThumbDownIcon fontSize="small" />
-                                      </IconButton>
-                                    </Box>
-                                  )}
+                                {message.sender === "bot" && (
+                                  <Box sx={{ width: "fit-content", ml: 1 }}>
+                                    {(hoveredMessageId === String(index) ||
+                                      feedbackState[index]) && (
+                                      <>
+                                        {(!feedbackState[index] ||
+                                          feedbackState[index] ===
+                                            "positive") && (
+                                          <IconButton
+                                            size="small"
+                                            onClick={() =>
+                                              handleThumbsUp(String(index), 1)
+                                            }
+                                          >
+                                            {feedbackState[index] ===
+                                            "positive" ? (
+                                              <ThumbUpIcon
+                                                fontSize="small"
+                                                sx={{
+                                                  position: "absolute",
+                                                  width: "16px",
+                                                  height: "16px",
+                                                  color: "#60a5fa",
+                                                  top: "15px",
+                                                  left: "-15px",
+                                                }}
+                                              />
+                                            ) : (
+                                              <ThumbUpOnAltIcon
+                                                fontSize="small"
+                                                sx={{
+                                                  width: "16px",
+                                                  height: "16px",
+                                                }}
+                                              />
+                                            )}
+                                          </IconButton>
+                                        )}
+                                        {(!feedbackState[index] ||
+                                          feedbackState[index] ===
+                                            "negative") && (
+                                          <IconButton
+                                            size="small"
+                                            onClick={() =>
+                                              handleThumbsDown(String(index), 0)
+                                            }
+                                          >
+                                            {feedbackState[index] ===
+                                            "negative" ? (
+                                              <ThumbDownIcon
+                                                fontSize="small"
+                                                sx={{
+                                                  position: "absolute",
+                                                  width: "16px",
+                                                  height: "16px",
+                                                  color: "#ff6347",
+                                                  top: "15px",
+                                                  left: "-15px",
+                                                }}
+                                              />
+                                            ) : (
+                                              <ThumbUpOffAltIcon
+                                                fontSize="small"
+                                                sx={{
+                                                  width: "16px",
+                                                  height: "16px",
+                                                }}
+                                              />
+                                            )}
+                                          </IconButton>
+                                        )}
+                                      </>
+                                    )}
+                                  </Box>
+                                )}
                               </Box>
                               {message.recommendations &&
                                 message.recommendations.length > 0 && (
@@ -467,7 +546,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                       <Box
                         sx={{
                           backgroundColor: "white",
-                          pt: "55px",
+                          pt: "5px",
                           border: "none",
                         }}
                       >
@@ -513,16 +592,22 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                         </Box>
                       </Box>
                     )}
-                    <Input
-                      input={input}
-                      handleSend={() => {
-                        handleStartChat(initialMessage);
-                        handleSend();
+                    <Box
+                      sx={{
+                        borderTop: "1px solid #cdcdcd",
                       }}
-                      setInput={setInput}
-                      back={!showChatUI ? "transparent" : "white"}
-                    />
-                    <Watermark back={!showChatUI ? "transparent" : "white"} />
+                    >
+                      <Input
+                        input={input}
+                        handleSend={() => {
+                          handleStartChat(initialMessage);
+                          handleSend();
+                        }}
+                        setInput={setInput}
+                        back={!showChatUI ? "transparent" : "white"}
+                      />
+                      <Watermark back={!showChatUI ? "transparent" : "white"} />
+                    </Box>
                   </Box>
                 </motion.div>
               </Box>
@@ -544,14 +629,21 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: "90%",
             bgcolor: "background.paper",
             boxShadow: 24,
-            p: 4,
+            p: 2,
             borderRadius: 2,
           }}
         >
-          <h2 id="feedback-modal-title">Provide Feedback</h2>
+          <h2
+            id="feedback-modal-title"
+            style={{
+              color: "#151515",
+            }}
+          >
+            Provide Feedback
+          </h2>
           <TextField
             fullWidth
             multiline
@@ -562,7 +654,16 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
             onChange={(e) => setFeedbackMessage(e.target.value)}
             sx={{ my: 2 }}
           />
-          <Button variant="contained" onClick={handleFeedbackSubmit}>
+          <Button
+            variant="contained"
+            onClick={handleFeedbackSubmit}
+            disableRipple
+            sx={{
+              boxShadow: "none",
+              textTransform: "none",
+              backgroundColor: "#343A40",
+            }}
+          >
             Submit feedback
           </Button>
         </Box>
