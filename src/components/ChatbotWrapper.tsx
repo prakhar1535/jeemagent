@@ -275,8 +275,8 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
               <Box
                 sx={{
                   borderRadius: "15px",
-                  height: expand ? "635px" : "635px",
-                  maxHeight: "650px",
+                  height: expand ? "657px" : "657px",
+                  maxHeight: "662px",
                   display: "flex",
                   flexDirection: "column",
                   overflow: "hidden",
