@@ -69,8 +69,6 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [feedbackPos, setFeedbackPos] = useState(false);
-  const [feedbackNeg, setFeedbackNeg] = useState(false);
   const [feedbackState, setFeedbackState] = useState<
     Record<number, "positive" | "negative" | null>
   >({});
@@ -404,6 +402,16 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                             "positive") && (
                                           <IconButton
                                             size="small"
+                                            disableFocusRipple
+                                            disableRipple
+                                            disableTouchRipple
+                                            sx={{
+                                              cursor:
+                                                feedbackState[index] ===
+                                                "positive"
+                                                  ? "default"
+                                                  : "pointer",
+                                            }}
                                             onClick={() =>
                                               handleThumbsUp(String(index), 1)
                                             }
@@ -437,6 +445,16 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                             "negative") && (
                                           <IconButton
                                             size="small"
+                                            disableFocusRipple
+                                            disableRipple
+                                            disableTouchRipple
+                                            sx={{
+                                              cursor:
+                                                feedbackState[index] ===
+                                                "negative"
+                                                  ? "default"
+                                                  : "pointer",
+                                            }}
                                             onClick={() =>
                                               handleThumbsDown(String(index), 0)
                                             }
@@ -583,9 +601,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                                     color: "#151515",
                                   }}
                                 >
-                                  {msg.length > 10
-                                    ? `${msg.substring(0, 25)}...`
-                                    : msg}
+                                  {msg}
                                 </Typography>
                               </Box>
                             ))}
