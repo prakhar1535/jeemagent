@@ -23,7 +23,7 @@ const TopBar: React.FC<TopBarProps> = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "10px",
+        padding: "16px",
         backgroundColor: backgroundColor,
       }}
     >

@@ -1,51 +1,49 @@
-import React, { KeyboardEvent } from "react";
-import { Box, TextField, IconButton } from "@mui/material";
+import { Box, IconButton, InputBase } from "@mui/material";
+import React from "react";
 import SendIcon from "@mui/icons-material/Send";
 
-interface InputProps {
+interface Inputs {
   input: string;
+  setInput: (value: string) => void;
   handleSend: () => void;
-  setInput: (input: string) => void;
   back: string;
 }
 
-const Input: React.FC<InputProps> = ({ input, handleSend, setInput, back }) => {
-  const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSend();
-    }
-  };
-
+const Input: React.FC<Inputs> = ({ input, setInput, handleSend, back }) => {
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        padding: "10px",
+        padding: "4px 16px",
+        width: "100%",
+        margin: "0 auto",
         backgroundColor: back,
       }}
     >
-      <TextField
+      <InputBase
         fullWidth
-        variant="outlined"
-        placeholder="Type a message..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyPress={(e) => e.key === "Enter" && handleSend()}
+        placeholder="Write your message..."
         sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-            backgroundColor: "#F5F5F5",
+          fontSize: "14px",
+          "& .MuiInputBase-input": {
+            padding: "8px 0",
           },
         }}
       />
       <IconButton
         onClick={handleSend}
-        color="primary"
-        sx={{ marginLeft: "10px" }}
+        sx={{
+          padding: "15px 12px",
+          "&:hover": { backgroundColor: "transparent" },
+        }}
       >
-        <SendIcon />
+        <SendIcon
+          sx={{ fontSize: 20, color: (theme) => theme.palette.text.secondary }}
+        />
       </IconButton>
     </Box>
   );
