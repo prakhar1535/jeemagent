@@ -336,7 +336,7 @@ const ChatbotWrapper: React.FC<ChatbotWrapperProps> = ({ chatbotId }) => {
                         style={{
                           flexGrow: 1,
                           overflowY: "auto",
-                          padding: "12px",
+                          padding: "16px",
                           backgroundColor: "white",
                         }}
                       >

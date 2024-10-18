@@ -1,9 +1,12 @@
-import dynamic from "next/dynamic";
+import { getApiDocs } from "@/lib/swagger";
+import { Box } from "@mui/material";
+import SwaggerUI from "@/components/Swagger-UI";
 
-const SwaggerUI = dynamic(() => import("@/components/Swagger-UI"), {
-  ssr: false,
-});
-
-export default function ApiDoc() {
-  return <SwaggerUI />;
+export default async function ApiDoc() {
+  const spec = await getApiDocs();
+  return (
+    <Box>
+      <SwaggerUI spec={spec} />
+    </Box>
+  );
 }
